@@ -1,14 +1,16 @@
 # Setup Guide
 
-This guide helps you set up the Daily Operating System skill. But before diving into the mechanics, let's think through what will make this work well for you.
+**Three paths: Full Setup (Calendar + Email, ~20 min), Calendar Only (~15 min), or Manual (no API).** Most users should start with [Path A](#path-a-full-setup-with-google-apis).
+
+This guide walks you through setup, but first: think about what will make this work well for you.
 
 ## Before You Start: Think About Your File System
 
-This skill works best when you have **local files that contain context about the people and projects you meet about**. It doesn't require a specific structure, but having *some* structure helps.
+This skill works best when you have local files that contain context about the people and projects you meet about. It doesn't require a specific structure, but having *some* structure helps.
 
 ### The Ideal Setup
 
-The skill shines when you have something like:
+The skill works best when you have something like:
 
 ```
 Your-Work-Folder/
@@ -33,32 +35,32 @@ That's fine. The skill still works. You'll get:
 - Email triage (if enabled)
 - A daily overview
 
-You just won't get the "pull context from customer folder" magic. Many people start here and gradually build up their file structure as they see the value.
+You just won't get the automatic context lookup. Many people start here and gradually build up their file structure as they see the value.
 
 ### What If My Structure Is Different?
 
 The skill is flexible. During setup, you'll specify:
-- **Your internal email domains** - So it knows which meetings are internal vs external
-- **Your customer folder path** (optional) - Where to look for context
+- Your internal email domains (so it knows which meetings are internal vs external)
+- Your customer folder path, if you have one
 
 It matches external attendee email domains to folder names. `jane@acme.com` → looks for `Acme/` or `Acme-Corp/` folder.
 
----
+**Already have a good file structure?** [Jump to Path A](#path-a-full-setup-with-google-apis).
 
 ## Setup Options
 
-You have two paths:
+You have three paths:
 
-### Path A: Full Setup (Calendar + Email) — Recommended
+### Path A: Full Setup (Calendar + Email)
 
-Takes ~15-20 minutes. You'll configure Google Calendar and Gmail APIs. This gives you:
+Recommended. Takes about 20 minutes. You'll configure Google Calendar and Gmail APIs. This gives you:
 - Automatic calendar reading
 - Email triage and prioritization
 - The full experience
 
 ### Path B: Calendar Only
 
-Takes ~10-15 minutes. Just Google Calendar API. You'll get:
+Takes about 15 minutes. Just Google Calendar API. You'll get:
 - Automatic calendar reading
 - Meeting prep files
 - Action items and focus suggestions
@@ -71,13 +73,11 @@ No API setup required. You'll manually enter your meetings each morning. Useful 
 - You want to try the skill before committing to setup
 - Your calendar is in a system without API access
 
----
-
 ## Path A: Full Setup with Google APIs
 
 ### Step 1: Create a Google Cloud Project
 
-This is where you'll configure API access. It sounds intimidating but takes about 5 minutes.
+This takes about 5 minutes.
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Click "Select a project" → "New Project"
@@ -160,7 +160,7 @@ This will:
 
 After you approve, you'll see: `Authentication successful!`
 
-A `token.json` file is created—this stores your access token so you don't have to re-authenticate every time.
+A `token.json` file is created. This stores your access token so you don't have to re-authenticate every time.
 
 ### Step 7: Test It
 
@@ -188,16 +188,12 @@ This will ask you about:
 - Confirm that Calendar is configured
 - Whether to enable email integration
 
----
-
 ## Path B: Calendar Only
 
 Follow Steps 1-7 above, but:
 - In Step 2, only enable Google Calendar API
 - In Step 3, only add the calendar scope
 - When running `/today --setup`, say "no" to email integration
-
----
 
 ## Path C: Manual Mode
 
@@ -218,9 +214,7 @@ Example: 10:00 | Acme Sync | jane@acme.com, bob@acme.com
 Type 'done' when finished.
 ```
 
-This still gives you meeting prep files and the daily structure—just without automatic calendar reading.
-
----
+This still gives you meeting prep files and the daily structure, just without automatic calendar reading.
 
 ## After Setup
 
@@ -235,14 +229,12 @@ Run `/today` and check the `_today/` folder in your working directory:
 
 ### Building the Habit
 
-The skill works best as a **morning ritual**:
+The skill works best as a morning ritual:
 
 1. Open Claude Code
 2. Run `/today`
 3. Review `00-overview.md`
 4. Open prep files before meetings
-
-After a few days, you'll wonder how you worked without it.
 
 ### Evolving Your File Structure
 
@@ -258,8 +250,6 @@ Accounts/
 ```
 
 The skill will find and include this context automatically.
-
----
 
 ## Troubleshooting
 
@@ -289,8 +279,6 @@ The OAuth consent screen isn't configured correctly. Check:
 - Verify the Gmail API is enabled
 - Make sure both gmail scopes were added to the consent screen
 
----
-
 ## Security Notes
 
 Your credentials and tokens are stored locally:
@@ -303,11 +291,9 @@ Your credentials and tokens are stored locally:
 Both are in `.gitignore` by default. Never commit them to a public repo.
 
 The skill can:
-- **Read** your calendar and email
-- **Create** calendar events and email drafts
-- **Cannot** send emails directly (only creates drafts)
-
----
+- Read your calendar and email
+- Create calendar events and email drafts
+- Cannot send emails directly (only creates drafts)
 
 ## Updating Permissions
 
