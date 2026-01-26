@@ -1,150 +1,157 @@
 # Daily Operating System
 
-A Claude Code skill that prepares your workday automatically. Run `/today` each morning to get meeting prep, action items, email triage, and focus areas—all in one place.
+**A Claude Code skill that eliminates the "what do I need to know before this meeting?" scramble.**
 
-## What It Does
+## The Problem
 
-- **Meeting Prep**: Creates context files for each meeting, with extra detail for customer/external calls
-- **Action Items**: Surfaces what's due today, what's overdue, and what's coming up
-- **Email Triage**: Scans your inbox and highlights what needs attention (optional, requires Gmail API)
-- **Focus Areas**: Suggests what to work on during downtime
-- **Auto-Archive**: Yesterday's files get archived automatically
+Every knowledge worker knows this moment: You're five minutes from a meeting. You know you talked to this person last month. There were action items. Maybe an email thread? You scramble through Slack, your notes app, your calendar, your inbox—trying to reconstruct context that should have been at your fingertips.
+
+Or worse: You walk into the meeting cold. You ask questions they already answered. You forget the commitment you made. You look unprepared because you *were* unprepared.
+
+This isn't a character flaw. It's a systems problem.
+
+**Your context is scattered across twelve apps. No single tool knows what you need to know before each meeting.**
+
+## The Solution
+
+`/today` runs once each morning. It looks at your calendar, your files, your email, and assembles everything you need for the day ahead:
+
+- **Meeting prep files** for every meeting, with extra context for customer/external calls
+- **Action items** surfaced by due date—what's overdue, what's due today, what's coming
+- **Email triage** showing what actually needs attention vs. what's noise
+- **Focus suggestions** for the gaps between meetings
+
+By the time you finish your coffee, you know what your day looks like and what you need to be ready for.
+
+## What a Morning Looks Like
+
+**Before /today:**
+```
+8:45 AM - Open calendar. See "Acme Corp Sync" at 10am.
+8:46 AM - What did we talk about last time? Search notes...
+8:52 AM - Found it. Were there action items? Check task app...
+8:58 AM - Did they email me about something? Search inbox...
+9:04 AM - What's their current status again? Check CRM...
+9:15 AM - Give up. Wing it.
+```
+
+**After /today:**
+```
+8:45 AM - Run /today
+8:46 AM - Open _today/00-overview.md
+8:47 AM - See Acme meeting at 10am with prep link
+8:48 AM - Open prep file. Context, recent history, open actions, suggested topics.
+8:49 AM - Ready.
+```
+
+The difference isn't magic. It's having a system that assembles context *before* you need it.
+
+## Who This Is For
+
+This skill works best if you:
+
+- Have **recurring meetings** with the same people (customers, partners, stakeholders)
+- Keep **notes and context** in local files or folders
+- Use **Google Calendar** (required) and optionally **Gmail**
+- Want to **start each day knowing what's ahead** instead of discovering it in real-time
+
+It's particularly valuable for:
+- **Account managers and customer success** - Every customer call benefits from context
+- **Consultants** - Multiple clients, each with their own history
+- **Managers** - 1:1s and team meetings where continuity matters
+- **Anyone with meeting-heavy days** - Reduce the cognitive load of context-switching
+
+## What It Actually Does
+
+When you run `/today`:
+
+1. **Archives yesterday** - Previous day's files move to `_today/archive/`
+2. **Reads your calendar** - Pulls today's meetings from Google Calendar
+3. **Classifies each meeting** - Customer, internal, or personal based on attendee domains
+4. **Generates prep files** - One file per meeting, with depth based on type
+5. **Scans email** (optional) - Surfaces high-priority items, counts the rest
+6. **Aggregates action items** - From your task files, organized by due date
+7. **Creates your daily overview** - Single file showing the full picture
+
+Output structure:
+```
+_today/
+├── 00-overview.md              # Your daily dashboard
+├── 01-0900-standup.md          # Meeting at 9am
+├── 02-1000-customer-acme.md    # Customer meeting with full context
+├── 03-1400-partner-sync.md     # External meeting
+├── 80-actions-due.md           # Action items by due date
+├── 81-suggested-focus.md       # What to work on between meetings
+├── 83-email-summary.md         # Email triage (if enabled)
+└── archive/                    # Previous days
+```
 
 ## Installation
 
 ```bash
-npx skills add yourusername/daily-operating-system
+npx skills add jamesgiroux/daily-operating-system
 ```
 
 Or clone directly:
-
 ```bash
-git clone https://github.com/yourusername/daily-operating-system.git ~/.claude/skills/daily-operating-system
+git clone https://github.com/jamesgiroux/daily-operating-system.git ~/.claude/skills/daily-operating-system
 ```
 
 ## Quick Start
 
-1. **Run setup** (first time only):
+1. **Run setup**:
    ```
    /today --setup
    ```
+   This walks you through configuration—internal email domains, where you keep customer context, and whether to enable email integration.
 
-2. **Run daily** (each morning):
+2. **Configure Google Calendar** (required):
+   See [SETUP.md](SETUP.md) for the ~15 minute OAuth setup.
+
+3. **Run daily**:
    ```
    /today
    ```
 
-3. **Check your `_today/` folder** for:
-   - `00-overview.md` - Your daily dashboard
-   - Meeting prep files numbered by time
-   - `80-actions-due.md` - Action items
-   - `83-email-summary.md` - Email summary (if enabled)
+4. **Check `_today/00-overview.md`** for your daily dashboard.
 
-## Setup Options
+## The Philosophy
 
-During setup, you'll configure:
+This isn't about automating your job. It's about **eliminating the friction between you and the context you need**.
 
-| Option | Required | Description |
-|--------|----------|-------------|
-| Internal domains | Yes | Email domains for your org (e.g., `@company.com`) |
-| Customer folder | No | Path to customer/account context (e.g., `Accounts/`) |
-| Calendar | Yes | Google Calendar API or manual entry |
-| Email | No | Gmail API for inbox triage |
+Every minute spent hunting for "what did we discuss last time?" is a minute not spent on the actual work. Every meeting entered without context is a relationship slightly degraded.
 
-## Google API Setup
+The best systems don't require discipline—they make the right thing the easy thing. `/today` makes being prepared the default.
 
-For calendar and email integration, you'll need to set up Google API credentials. See [SETUP.md](SETUP.md) for detailed instructions.
+## Requirements
 
-**Quick version:**
-1. Create a Google Cloud project
-2. Enable Calendar and Gmail APIs
-3. Create OAuth credentials
-4. Download `credentials.json` to `scripts/`
-5. Run `python3 scripts/google_api.py auth`
-
-## File Structure
-
-After running `/today`:
-
-```
-_today/
-├── 00-overview.md              # Daily dashboard
-├── 01-0900-meeting-name.md     # Meeting prep (by time)
-├── 02-1100-team-sync.md
-├── 03-1400-customer-call.md    # Customer meetings get extra context
-├── 80-actions-due.md           # Action items
-├── 81-suggested-focus.md       # Focus areas
-├── 83-email-summary.md         # Email triage
-├── tasks/
-│   └── master-task-list.md     # Persistent task list
-├── config.yaml                 # Your configuration
-└── archive/
-    └── 2026-01-20/             # Yesterday's files
-```
+- **Claude Code**
+- **Python 3.8+** (for Google API integration)
+- **Google Calendar API** (required)
+- **Gmail API** (optional, for email triage)
 
 ## Configuration
 
-Your config lives at `_today/config.yaml`:
+After running `/today --setup`, your config lives at `_today/config.yaml`:
 
 ```yaml
 internal_domains:
-  - "@company.com"
-  - "@corp.company.com"
+  - "@yourcompany.com"
 
-customer_folder: "Accounts"  # or null
+customer_folder: "Accounts"  # Where you keep customer context (or null)
 
 integrations:
   calendar:
     enabled: true
     provider: "google"
   email:
-    enabled: true
-    provider: "google"
-
-archive_days: 7
+    enabled: false  # Set to true if you configured Gmail
 ```
 
-## How Meeting Classification Works
+## Learn More
 
-| Attendees | Classification | Prep Level |
-|-----------|---------------|------------|
-| None or only you | Personal | Minimal |
-| All internal domains | Internal | Minimal |
-| External + matches customer folder | Customer | Full prep with context |
-| External + no match | External | Basic with attendee list |
-
-## Customization
-
-### Add More Internal Domains
-
-Edit `_today/config.yaml`:
-
-```yaml
-internal_domains:
-  - "@company.com"
-  - "@subsidiary.com"
-  - "@contractor.company.com"
-```
-
-### Change Customer Folder Location
-
-```yaml
-customer_folder: "Clients"  # or "Customers", "Accounts", etc.
-```
-
-### Disable Email Integration
-
-```yaml
-integrations:
-  email:
-    enabled: false
-```
-
-## Requirements
-
-- Claude Code
-- Python 3.8+ (for Google API script)
-- Google API credentials (for calendar/email integration)
+- [SETUP.md](SETUP.md) - Detailed setup guide including Google API configuration
+- [references/](references/) - How meeting classification and email triage work
 
 ## License
 
@@ -152,4 +159,4 @@ MIT
 
 ## Contributing
 
-Issues and PRs welcome. This started as a personal productivity system and is being shared in the spirit of "what works for me might work for you."
+This started as a personal system that I've refined over months of daily use. Issues and PRs welcome—especially if you find ways to make setup easier or extend the meeting classification logic.

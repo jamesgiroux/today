@@ -1,79 +1,148 @@
 # Setup Guide
 
-This guide walks through setting up the Daily Operating System skill, including Google API integration for calendar and email.
+This guide helps you set up the Daily Operating System skill. But before diving into the mechanics, let's think through what will make this work well for you.
 
-## Quick Setup (No Google API)
+## Before You Start: Think About Your File System
 
-If you don't want to set up Google API, you can still use the skill with manual meeting entry:
+This skill works best when you have **local files that contain context about the people and projects you meet about**. It doesn't require a specific structure, but having *some* structure helps.
 
-1. Run `/today --setup`
-2. When asked about calendar, choose "manual"
-3. When asked about email, choose "no"
-4. Each morning, you'll be prompted to enter your meetings
+### The Ideal Setup
 
-This still gives you meeting prep files, action item tracking, and focus suggestions—just without automatic calendar/email integration.
+The skill shines when you have something like:
+
+```
+Your-Work-Folder/
+├── Accounts/           # or Customers/, Clients/, Projects/
+│   ├── Acme-Corp/
+│   │   ├── meeting-notes/
+│   │   ├── action-items.md
+│   │   └── context.md
+│   ├── Big-Client/
+│   └── Partner-Co/
+├── _today/             # Created by this skill
+└── ... your other stuff
+```
+
+When you have a meeting with someone from Acme Corp, the skill can pull context from `Accounts/Acme-Corp/` and include it in your prep.
+
+### What If I Don't Have This?
+
+That's fine. The skill still works. You'll get:
+- Meeting prep files for every meeting
+- Action items from any task files you do have
+- Email triage (if enabled)
+- A daily overview
+
+You just won't get the "pull context from customer folder" magic. Many people start here and gradually build up their file structure as they see the value.
+
+### What If My Structure Is Different?
+
+The skill is flexible. During setup, you'll specify:
+- **Your internal email domains** - So it knows which meetings are internal vs external
+- **Your customer folder path** (optional) - Where to look for context
+
+It matches external attendee email domains to folder names. `jane@acme.com` → looks for `Acme/` or `Acme-Corp/` folder.
 
 ---
 
-## Full Setup (With Google API)
+## Setup Options
 
-### Prerequisites
+You have two paths:
 
-- Python 3.8 or higher
-- A Google account
-- ~15 minutes for initial setup
+### Path A: Full Setup (Calendar + Email) — Recommended
+
+Takes ~15-20 minutes. You'll configure Google Calendar and Gmail APIs. This gives you:
+- Automatic calendar reading
+- Email triage and prioritization
+- The full experience
+
+### Path B: Calendar Only
+
+Takes ~10-15 minutes. Just Google Calendar API. You'll get:
+- Automatic calendar reading
+- Meeting prep files
+- Action items and focus suggestions
+- No email integration
+
+### Path C: Manual Mode
+
+No API setup required. You'll manually enter your meetings each morning. Useful if:
+- You can't set up Google API (work restrictions, etc.)
+- You want to try the skill before committing to setup
+- Your calendar is in a system without API access
+
+---
+
+## Path A: Full Setup with Google APIs
 
 ### Step 1: Create a Google Cloud Project
 
+This is where you'll configure API access. It sounds intimidating but takes about 5 minutes.
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Click "Select a project" → "New Project"
-3. Name it something like "Daily OS" and create it
-4. Select your new project
+3. Name it something like "Daily OS" or "Personal Productivity"
+4. Click "Create" and wait a few seconds
+5. Make sure your new project is selected
 
-### Step 2: Enable APIs
+### Step 2: Enable the APIs
 
-1. Go to "APIs & Services" → "Library"
-2. Search for and enable each:
-   - **Google Calendar API**
-   - **Gmail API** (if you want email integration)
+1. In the left sidebar, go to "APIs & Services" → "Library"
+2. Search for **Google Calendar API** and click "Enable"
+3. Search for **Gmail API** and click "Enable"
 
 ### Step 3: Configure OAuth Consent Screen
 
-1. Go to "APIs & Services" → "OAuth consent screen"
-2. Choose "External" (unless you have a Google Workspace org)
-3. Fill in required fields:
-   - App name: "Daily OS"
-   - User support email: your email
-   - Developer contact: your email
-4. Click "Save and Continue"
-5. On Scopes page, click "Add or Remove Scopes"
-6. Add these scopes:
-   - `https://www.googleapis.com/auth/calendar` (Calendar full access)
-   - `https://www.googleapis.com/auth/gmail.modify` (Gmail read/modify)
-   - `https://www.googleapis.com/auth/gmail.compose` (Gmail drafts)
-7. Save and continue through remaining screens
-8. Add your email as a test user
+This tells Google what your app does when it asks for permissions.
 
-### Step 4: Create Credentials
+1. Go to "APIs & Services" → "OAuth consent screen"
+2. Select **External** (unless you have a Google Workspace org and want Internal)
+3. Fill in the required fields:
+   - **App name**: "Daily OS" (or whatever you want)
+   - **User support email**: Your email
+   - **Developer contact**: Your email
+4. Click "Save and Continue"
+5. On the **Scopes** page:
+   - Click "Add or Remove Scopes"
+   - Add these scopes:
+     - `https://www.googleapis.com/auth/calendar`
+     - `https://www.googleapis.com/auth/gmail.modify`
+     - `https://www.googleapis.com/auth/gmail.compose`
+   - Click "Update" then "Save and Continue"
+6. On the **Test users** page:
+   - Click "Add Users"
+   - Add your own email address
+   - Click "Save and Continue"
+7. Review and click "Back to Dashboard"
+
+**Why test users?** Until you "publish" your app (unnecessary for personal use), only test users can authenticate. Adding yourself is all you need.
+
+### Step 4: Create OAuth Credentials
 
 1. Go to "APIs & Services" → "Credentials"
 2. Click "Create Credentials" → "OAuth client ID"
-3. Application type: "Desktop app"
-4. Name: "Daily OS CLI"
+3. Application type: **Desktop app**
+4. Name: "Daily OS CLI" (or whatever)
 5. Click "Create"
-6. Click "Download JSON"
-7. Save as `credentials.json` in the skill's `scripts/` folder
+6. Click "Download JSON" on the popup
+7. **Important**: Save this file as `credentials.json` in the skill's `scripts/` folder:
+   ```
+   ~/.claude/skills/daily-operating-system/scripts/credentials.json
+   ```
 
 ### Step 5: Install Python Dependencies
+
+The Google API requires a few Python packages:
 
 ```bash
 cd ~/.claude/skills/daily-operating-system/scripts
 
-# Create virtual environment (recommended)
+# Option A: Use a virtual environment (cleaner)
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-# Install dependencies
+# Option B: Install globally (simpler)
 pip install google-auth-oauthlib google-auth-httplib2 google-api-python-client
 ```
 
@@ -84,30 +153,111 @@ python3 google_api.py auth
 ```
 
 This will:
-1. Open a browser window
+1. Open your browser
 2. Ask you to sign in to Google
-3. Ask you to grant permissions
-4. Save a token locally for future use
+3. Show the permissions being requested (Calendar and Gmail access)
+4. Ask you to grant access
 
-You should see: "Authentication successful!"
+After you approve, you'll see: `Authentication successful!`
+
+A `token.json` file is created—this stores your access token so you don't have to re-authenticate every time.
 
 ### Step 7: Test It
 
 ```bash
-# Test calendar
+# Test calendar access
 python3 google_api.py calendar list 1
 
-# Test email (if enabled)
+# Test email access
 python3 google_api.py gmail list 5
 ```
 
-### Step 8: Configure the Skill
+You should see JSON output with your upcoming events and recent emails.
 
-Run `/today --setup` and:
-1. Enter your internal email domains
-2. Optionally specify a customer folder path
-3. Confirm Google Calendar is configured
-4. Choose whether to enable email integration
+### Step 8: Run Skill Setup
+
+Now run the skill's setup wizard:
+
+```
+/today --setup
+```
+
+This will ask you about:
+- Your internal email domains (e.g., `@yourcompany.com`)
+- Where you keep customer/account context (optional)
+- Confirm that Calendar is configured
+- Whether to enable email integration
+
+---
+
+## Path B: Calendar Only
+
+Follow Steps 1-7 above, but:
+- In Step 2, only enable Google Calendar API
+- In Step 3, only add the calendar scope
+- When running `/today --setup`, say "no" to email integration
+
+---
+
+## Path C: Manual Mode
+
+No Google API setup needed.
+
+1. Run `/today --setup`
+2. When asked about calendar, choose "manual"
+3. When asked about email, choose "no"
+
+Each morning when you run `/today`, you'll be prompted to enter your meetings:
+
+```
+What meetings do you have today?
+
+Enter each meeting as: TIME | TITLE | ATTENDEES
+Example: 10:00 | Acme Sync | jane@acme.com, bob@acme.com
+
+Type 'done' when finished.
+```
+
+This still gives you meeting prep files and the daily structure—just without automatic calendar reading.
+
+---
+
+## After Setup
+
+### Your First /today
+
+Run `/today` and check the `_today/` folder in your working directory:
+
+- `00-overview.md` - Your daily dashboard
+- Individual meeting prep files
+- `80-actions-due.md` - Action items (if you have task files)
+- `83-email-summary.md` - Email triage (if enabled)
+
+### Building the Habit
+
+The skill works best as a **morning ritual**:
+
+1. Open Claude Code
+2. Run `/today`
+3. Review `00-overview.md`
+4. Open prep files before meetings
+
+After a few days, you'll wonder how you worked without it.
+
+### Evolving Your File Structure
+
+As you use the skill, you may want to create or improve your customer/project folders. The prep files become much more useful when there's context to pull from.
+
+A simple structure to start:
+
+```
+Accounts/
+├── Customer-Name/
+│   ├── notes.md           # Running notes from meetings
+│   └── actions.md         # Open action items
+```
+
+The skill will find and include this context automatically.
 
 ---
 
@@ -115,67 +265,56 @@ Run `/today --setup` and:
 
 ### "credentials.json not found"
 
-Make sure `credentials.json` is in the `scripts/` folder, not the root folder.
+Make sure the file is in the `scripts/` folder, not the root folder of the skill.
 
 ### "Token refresh failed"
 
-Delete `token.json` and run `python3 google_api.py auth` again.
+Your token expired or was revoked. Delete `token.json` and run `python3 google_api.py auth` again.
 
 ### "Access blocked: This app's request is invalid"
 
-Your OAuth consent screen may not be configured correctly. Go back to the consent screen setup and make sure:
-- You've added your email as a test user
+The OAuth consent screen isn't configured correctly. Check:
+- You've added yourself as a test user
 - The required scopes are added
-
-### "Permission denied" errors
-
-The token may have expired or been revoked. Delete `token.json` and re-authenticate.
 
 ### Calendar shows no events
 
-Make sure:
-- You're checking the right calendar (defaults to primary)
-- Events exist in the time range being queried
-- The Calendar API is enabled in Google Cloud Console
+- Make sure events exist in the time range (today)
+- Check you're looking at the right calendar (defaults to primary)
+- Verify the Calendar API is enabled in Google Cloud Console
+
+### Email shows no results
+
+- Check your Gmail has unread messages in the inbox
+- Verify the Gmail API is enabled
+- Make sure both gmail scopes were added to the consent screen
 
 ---
 
 ## Security Notes
 
-- `credentials.json` contains your OAuth client secret—don't commit it to git
-- `token.json` contains your access token—don't share it
-- Both files are in `.gitignore` by default
-- The script only requests the permissions it needs
-- Gmail integration can create drafts but cannot send emails directly
+Your credentials and tokens are stored locally:
 
----
+| File | Contents | Keep Private |
+|------|----------|--------------|
+| `credentials.json` | OAuth client configuration | Yes |
+| `token.json` | Your access token | Yes |
 
-## Manual Calendar Entry
+Both are in `.gitignore` by default. Never commit them to a public repo.
 
-If you don't want to set up Google API, the skill will prompt you for meetings:
-
-```
-What meetings do you have today?
-
-Enter each meeting in this format:
-TIME | TITLE | ATTENDEES (comma-separated emails)
-
-Example:
-9:00 | Team Standup | alice@company.com, bob@company.com
-14:00 | Client Call | contact@client.com
-
-Enter 'done' when finished.
-```
-
-This is less convenient but still gives you the full meeting prep workflow.
+The skill can:
+- **Read** your calendar and email
+- **Create** calendar events and email drafts
+- **Cannot** send emails directly (only creates drafts)
 
 ---
 
 ## Updating Permissions
 
-If you need to add or change API permissions later:
+If you need to change what the skill can access:
 
 1. Delete `token.json`
-2. Update the `SCOPES` list in `google_api.py` if needed
-3. Run `python3 google_api.py auth` again
-4. Grant the new permissions
+2. Update scopes in `google_api.py` if needed
+3. Update scopes in Google Cloud Console
+4. Run `python3 google_api.py auth` again
+5. Grant the new permissions
