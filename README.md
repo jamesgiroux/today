@@ -1,20 +1,12 @@
 # Daily Operating System
 
-**Run `/today` each morning. Get meeting prep, action items, email triage. Stop scrambling for context.**
+A Claude Code skill that prepares you for every meeting on your calendar.
 
 ```bash
 npx skills add jamesgiroux/daily-operating-system
 ```
 
-## The Morning Scramble
-
-Every knowledge worker knows this moment: You're five minutes from a meeting. You know you talked to this person last month. There were action items. Maybe an email thread? You scramble through Slack, your notes app, your calendar, your inbox. Trying to reconstruct context that should have been at your fingertips.
-
-Or worse: You walk into the meeting cold. You ask questions they already answered. You forget the commitment you made. You look unprepared because you *were* unprepared.
-
-**Your context is scattered across twelve apps. No single tool knows what you need to know before each meeting.** That's a systems problem.
-
-## What /today Does
+## What It Does
 
 `/today` runs once each morning. It looks at your calendar, your files, your email, and assembles everything you need for the day ahead:
 
@@ -22,31 +14,6 @@ Or worse: You walk into the meeting cold. You ask questions they already answere
 - Action items surfaced by due date (overdue, due today, coming up)
 - Email triage showing what needs attention vs. noise
 - Focus suggestions for gaps between meetings
-
-By the time you finish your coffee, you know what your day looks like and what you need to be ready for.
-
-## Before and After
-
-**Before:**
-```
-8:45 AM - Open calendar. See "Acme Corp Sync" at 10am.
-8:46 AM - What did we talk about last time? Search notes...
-8:52 AM - Found it. Sort of. Were there action items? Check task app...
-8:58 AM - Did they email me about something? Search inbox...
-9:04 AM - What's their current status again? Check CRM...
-9:15 AM - Give up. Wing it.
-```
-
-**After:**
-```
-8:45 AM - Run /today
-8:46 AM - Open _today/00-overview.md
-8:47 AM - See Acme meeting at 10am with prep link
-8:48 AM - Open prep file. Context, recent history, open actions, suggested topics.
-8:49 AM - Ready.
-```
-
-A system that assembles context *before* you need it makes the difference.
 
 ## Who This Is For
 
@@ -120,10 +87,6 @@ integrations:
 
 - [SETUP.md](SETUP.md) - Detailed setup guide including Google API configuration
 - [references/](references/) - How meeting classification and email triage work
-
-## Get Started
-
-Tomorrow morning, run `/today` before your first meeting. Come back here if you find ways to make it better.
 
 ## License
 
