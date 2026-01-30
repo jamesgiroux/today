@@ -1,10 +1,12 @@
-# Daily Operating System
+# Today
 
 A Claude Code skill that prepares you for every meeting on your calendar.
 
 ```bash
-npx skills add jamesgiroux/daily-operating-system
+npx skills add jamesgiroux/today
 ```
+
+Part of the [Daily Operating System](https://github.com/jamesgiroux/daily-operating-system) by James Giroux.
 
 ## What It Does
 

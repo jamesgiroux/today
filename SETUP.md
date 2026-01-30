@@ -127,7 +127,7 @@ This tells Google what your app does when it asks for permissions.
 6. Click "Download JSON" on the popup
 7. **Important**: Save this file as `credentials.json` in the skill's `scripts/` folder:
    ```
-   ~/.claude/skills/daily-operating-system/scripts/credentials.json
+   ~/.claude/skills/today/scripts/credentials.json
    ```
 
 ### Step 5: Install Python Dependencies
@@ -135,7 +135,7 @@ This tells Google what your app does when it asks for permissions.
 The Google API requires a few Python packages:
 
 ```bash
-cd ~/.claude/skills/daily-operating-system/scripts
+cd ~/.claude/skills/today/scripts
 
 # Option A: Use a virtual environment (cleaner)
 python3 -m venv venv
